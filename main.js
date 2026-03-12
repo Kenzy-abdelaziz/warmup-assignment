@@ -1,3 +1,4 @@
+// Kenzy Abdelaziz - Delivery Driver Shift Tracker
 const fs = require("fs");
 
 function getShiftDuration(startTime, endTime) {
