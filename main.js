@@ -197,7 +197,7 @@ function getNetPay(driverID, actualHours, requiredHours, rateFile) {
         if (cols[0].trim() === driverID) { basePay = parseInt(cols[2].trim(), 10); tier = parseInt(cols[3].trim(), 10); break; }
     }
     // Allowed missing hours per tier before deductions apply
-    const ALLOWED = { 1: 20, 2: 15, 3: 10, 4: 3 };
+    const ALLOWED = { 1: 50, 2: 20, 3: 10, 4: 3 };
     const allowedSeconds = (ALLOWED[tier] || 0) * 3600;
     const actualSec = toSeconds(actualHours);
     const requiredSec = toSeconds(requiredHours);
