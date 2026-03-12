@@ -1,4 +1,3 @@
-// Kenzy Abdelaziz - Delivery Driver Shift Tracker
 const fs = require("fs");
 
 function getShiftDuration(startTime, endTime) {
@@ -156,10 +155,10 @@ function getTotalActiveHoursPerMonth(textFile, driverID, month) {
     const h = Math.floor(totalSeconds / 3600);
     const m = Math.floor((totalSeconds % 3600) / 60);
     const s = totalSeconds % 60;
-    return `${String(h).padStart(3, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 // Sums activeTime (column index 7) across all matching rows, including day-off shifts.
-// Output uses a three-digit hour field (hhh) to accommodate totals above 99 hours.
+// Returns hours without zero-padding to match the expected output format.
 
 function getRequiredHoursPerMonth(textFile, rateFile, bonusCount, driverID, month) {
     const shiftContent = fs.readFileSync(textFile, "utf8");
@@ -198,7 +197,7 @@ function getRequiredHoursPerMonth(textFile, rateFile, bonusCount, driverID, mont
     const h = Math.floor(totalSeconds / 3600);
     const m = Math.floor((totalSeconds % 3600) / 60);
     const s = totalSeconds % 60;
-    return `${String(h).padStart(3, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 // Skips any shift that falls on the driver's designated day off before summing quotas.
 // Each bonus in the given month reduces the total required hours by exactly 2 hours.
