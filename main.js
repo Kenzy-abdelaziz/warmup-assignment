@@ -16,8 +16,6 @@ function getShiftDuration(startTime, endTime) {
     const s = diff % 60;
     return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
-// Converts both AM/PM times to total seconds, then computes the difference.
-// Returns the result as h:mm:ss, so a single-digit hour is not zero-padded.
 
 function getIdleTime(startTime, endTime) {
     const toSeconds = (timeStr) => {
@@ -41,8 +39,6 @@ function getIdleTime(startTime, endTime) {
     const s = idle % 60;
     return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
-// Delivery window is 08:00–22:00; any time outside that window is idle.
-// Handles edge cases where the entire shift is inside or outside the window.
 
 function getActiveTime(shiftDuration, idleTime) {
     const toSeconds = (timeStr) => {
@@ -55,8 +51,6 @@ function getActiveTime(shiftDuration, idleTime) {
     const s = diff % 60;
     return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
-// Simply subtracts idleTime seconds from shiftDuration seconds.
-// When idleTime is 0:00:00 the result equals shiftDuration unchanged.
 
 function metQuota(date, activeTime) {
     const toSeconds = (timeStr) => {
@@ -74,8 +68,6 @@ function metQuota(date, activeTime) {
     const quota = isEid ? 6 * 3600 : 8 * 3600 + 24 * 60;
     return toSeconds(activeTime) >= quota;
 }
-// Eid al-Fitr 2025 runs April 10–30, reducing the daily quota to 6 hours.
-// On normal days the quota is 8 hours and 24 minutes (8 * 3600 + 24 * 60).
 
 function addShiftRecord(textFile, shiftObj) {
     const { driverID, driverName, date, startTime, endTime } = shiftObj;
@@ -103,8 +95,6 @@ function addShiftRecord(textFile, shiftObj) {
     fs.writeFileSync(textFile, lines.join("\n") + "\n", "utf8");
     return { driverID, driverName, date, startTime, endTime, shiftDuration, idleTime, activeTime, metQuota: quota, hasBonus: false };
 }
-// Returns {} immediately if a record with the same driverID + date already exists.
-// New records for an existing driver are inserted after that driver's last entry.
 
 function setBonus(textFile, driverID, date, newValue) {
     let content = fs.readFileSync(textFile, "utf8");
@@ -119,8 +109,6 @@ function setBonus(textFile, driverID, date, newValue) {
     });
     fs.writeFileSync(textFile, updated.join("\n"), "utf8");
 }
-// Locates the correct row by matching both driverID and date columns.
-// Writes the modified content back to the file in place without returning anything.
 
 function countBonusPerMonth(textFile, driverID, month) {
     const content = fs.readFileSync(textFile, "utf8");
@@ -137,8 +125,6 @@ function countBonusPerMonth(textFile, driverID, month) {
     }
     return found ? count : -1;
 }
-// Normalises the month string with parseInt so "4" and "04" both match April.
-// Returns -1 only when the driverID is completely absent from the file.
 
 function getTotalActiveHoursPerMonth(textFile, driverID, month) {
     const content = fs.readFileSync(textFile, "utf8");
@@ -157,8 +143,6 @@ function getTotalActiveHoursPerMonth(textFile, driverID, month) {
     const s = totalSeconds % 60;
     return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
-// Sums activeTime (column index 7) across all matching rows, including day-off shifts.
-// Returns hours without zero-padding to match the expected output format.
 
 function getRequiredHoursPerMonth(textFile, rateFile, bonusCount, driverID, month) {
     const shiftContent = fs.readFileSync(textFile, "utf8");
@@ -199,8 +183,6 @@ function getRequiredHoursPerMonth(textFile, rateFile, bonusCount, driverID, mont
     const s = totalSeconds % 60;
     return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
-// Skips any shift that falls on the driver's designated day off before summing quotas.
-// Each bonus in the given month reduces the total required hours by exactly 2 hours.
 
 function getNetPay(driverID, actualHours, requiredHours, rateFile) {
     const toSeconds = (timeStr) => {
@@ -214,7 +196,8 @@ function getNetPay(driverID, actualHours, requiredHours, rateFile) {
         const cols = line.split(",");
         if (cols[0].trim() === driverID) { basePay = parseInt(cols[2].trim(), 10); tier = parseInt(cols[3].trim(), 10); break; }
     }
-    const ALLOWED = { 1: 50, 2: 20, 3: 10, 4: 3 };
+    // Allowed missing hours per tier before deductions apply
+    const ALLOWED = { 1: 20, 2: 15, 3: 10, 4: 3 };
     const allowedSeconds = (ALLOWED[tier] || 0) * 3600;
     const actualSec = toSeconds(actualHours);
     const requiredSec = toSeconds(requiredHours);
@@ -225,8 +208,6 @@ function getNetPay(driverID, actualHours, requiredHours, rateFile) {
     const salaryDeduction = billableHours * deductionRatePerHour;
     return basePay - salaryDeduction;
 }
-// Tier-based allowance is subtracted before computing billable missing hours.
-// Only full hours count toward the deduction; fractional hours are discarded with Math.floor.
 
 module.exports = {
     getShiftDuration,
